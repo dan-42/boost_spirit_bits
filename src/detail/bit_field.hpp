@@ -7,26 +7,7 @@
 #include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
-
-#include <boost/phoenix/bind/bind_member_variable.hpp>
-
-
-namespace boost { namespace spirit { namespace detail {
-
-template<typename ReturnType>
-union bit_field_container {
-  static_assert((sizeof(ReturnType) == 1), "size of ReturnType must be 1 byte in size!");
-  static_assert((std::is_class<ReturnType>::value), "ReturnType must be struct or class!");
-
-  bit_field_container() : _native(0) {    }
-  bit_field_container(const uint8_t& native_value): _native(native_value){   }
-  bit_field_container(const ReturnType& type) : _bit_field(type) {    }
-
-  uint8_t _native;
-  ReturnType _bit_field;
-};
-
-}}} 
+#include <boost/spirit/include/phoenix_operator.hpp>
 
 
 namespace boost { namespace spirit { namespace qi {
@@ -37,17 +18,14 @@ template<typename Iterator, typename ReturnType>
 struct bit_field : grammar<Iterator, ReturnType()> {
   static_assert((sizeof(ReturnType) == 1), "size of ReturnType must be 1 byte in size!");
   static_assert((std::is_class<ReturnType>::value), "ReturnType must be struct or class!");
-  
 
   bit_field() : bit_field::base_type(start) {    
 
-    _8bits = byte_;
-    start = _8bits[_val = boost::phoenix::bind(&bit_field_container<ReturnType>::_bit_field, _1) ];
+    start = byte_[_val = *boost::phoenix::reinterpret_cast_<ReturnType*>(&_1) ];
   
   }
 
   rule<Iterator,ReturnType()> start;
-  rule<Iterator, bit_field_container<ReturnType>()> _8bits;
 
 };
 
@@ -66,13 +44,11 @@ struct bit_field : grammar<Iterator, ReturnType()> {
 
   bit_field() : bit_field::base_type(start) {    
 
-    _8bits = byte_[_1 = boost::phoenix::bind(&bit_field_container<ReturnType>::_native, _val) ];
+	  start = byte_[_1 = *boost::phoenix::reinterpret_cast_<const uint8_t*>(&_val) ];
 
-    start = _8bits;
   }
 
   rule<Iterator, ReturnType()> start;
-  rule<Iterator, bit_field_container<ReturnType>()> _8bits;
 
 };
 
