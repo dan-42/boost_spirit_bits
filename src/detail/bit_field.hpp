@@ -12,7 +12,6 @@
 
 namespace boost { namespace spirit { namespace qi {
 
-using boost::spirit::detail::bit_field_container;
 
 template<typename Iterator, typename ReturnType>
 struct bit_field : grammar<Iterator, ReturnType()> {
@@ -35,7 +34,6 @@ struct bit_field : grammar<Iterator, ReturnType()> {
 
 namespace boost { namespace spirit { namespace karma {
 
-using boost::spirit::detail::bit_field_container;
 
 template<typename Iterator, typename ReturnType>
 struct bit_field : grammar<Iterator, ReturnType()> {
